@@ -52,6 +52,19 @@ secrets:
   datadogRemoteKey: __DATADOG_REMOTE_KEY__
 datadog:
   enabled: false
+  # APM auto-instrumentation (Single-Step Instrumentation) — opt-in.
+  # Quando `autoInstrument: true` E `datadog.enabled: true`, o pod ganha a
+  # label `datadoghq.com/apm-instrumentation: "enabled"` no template, e o
+  # Cluster Agent injeta automaticamente:
+  #   - init container com a tracer lib da Datadog (java/python/js/dotnet)
+  #   - env vars de bootstrap (JAVA_TOOL_OPTIONS, NODE_OPTIONS, etc.)
+  #   - volume compartilhado com a lib
+  # App não precisa adicionar `dd-trace-*` na image. Custo: ~3-8s extra no
+  # pod startup + ~1-5% CPU runtime do tracer. Traces aparecem no APM
+  # dashboard automaticamente após o rollout.
+  # Vide https://docs.datadoghq.com/tracing/trace_collection/single-step-apm/kubernetes/
+  apm:
+    autoInstrument: false
 # Autoscaling via KEDA (ScaledObject). Workers tipicamente escalam por profundidade
 # de fila (kafka/sqs/rabbitmq). CPU/memory são fallback razoável; troque/some
 # triggers conforme a fila — schema completo em values.yaml do platform-k8s-worker-chart.
